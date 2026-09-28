@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Show do Milhão da Água</title>
+<style>
+:root{--bg1:#0b1d5c;--bg2:#050b2e;--gold:#ffc933;--gold2:#ff9f1c;--ok:#22c55e;--bad:#ef4444;--card:#12307f;--line:#5b7cff;--txt:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"Trebuchet MS","Segoe UI",Verdana,sans-serif;color:var(--txt);background:radial-gradient(circle at 50% 0,var(--bg1),var(--bg2) 75%);overflow-x:hidden}
+#app{max-width:1100px;margin:0 auto;padding:14px 18px;min-height:100%;display:flex;flex-direction:column;gap:12px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(34px,7vw,74px);margin:0;color:var(--gold);text-shadow:0 4px 0 #8a5a00,0 0 30px #ffb70066;line-height:1.05}
+.center{text-align:center;margin:auto;display:flex;flex-direction:column;align-items:center;gap:16px}
+.screen{display:none;flex:1}.screen.on{display:flex;flex-direction:column;gap:12px}
+p.big{font-size:clamp(18px,2.6vw,28px);margin:0;max-width:760px}
+button{font:inherit;cursor:pointer;color:inherit}
+.btn{background:linear-gradient(#ffd75e,var(--gold2));color:#3a2100;border:0;border-radius:40px;padding:14px 34px;font-size:clamp(20px,3vw,30px);font-weight:800;box-shadow:0 5px 0 #a15c00}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a15c00}
+.btn:focus-visible,.opt:focus-visible{outline:4px solid #fff;outline-offset:3px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{background:#0a1a55;border:2px solid var(--line);border-radius:14px;padding:8px 16px;font-size:clamp(16px,2.2vw,24px);font-weight:700}
+.pill b{color:var(--gold)}
+.hearts{letter-spacing:4px}
+.bar{height:16px;background:#0a1a55;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .6s}
+.prize{text-align:center;font-family:Georgia,serif;font-size:clamp(20px,3vw,32px);color:var(--gold)}
+.q{background:linear-gradient(var(--card),#0c2260);border:3px solid var(--gold);border-radius:22px;padding:clamp(14px,3vw,30px);font-size:clamp(22px,3.4vw,38px);font-weight:700;text-align:center;box-shadow:0 0 30px #ffc93344}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.opts{grid-template-columns:1fr}}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:linear-gradient(#1a3f9e,#10307f);border:3px solid var(--line);border-radius:60px;padding:clamp(10px,2vw,18px) 22px;font-size:clamp(18px,2.6vw,30px);font-weight:600;transition:transform .15s}
+.opt:hover:not(:disabled){transform:scale(1.02);border-color:var(--gold)}
+.opt span{background:var(--gold);color:#3a2100;border-radius:50%;min-width:1.7em;height:1.7em;display:grid;place-items:center;font-weight:800}
+.opt:disabled{cursor:default}
+.opt.sel{background:linear-gradient(#ffd75e,var(--gold2));color:#3a2100;border-color:#fff;animation:pulse .7s infinite alternate}
+.opt.ok{background:var(--ok);border-color:#fff;color:#fff;animation:pop .5s}
+.opt.bad{background:var(--bad);border-color:#fff;animation:shake .5s}
+@keyframes pulse{to{transform:scale(1.03);box-shadow:0 0 28px #ffc933}}
+@keyframes pop{50%{transform:scale(1.07)}}
+@keyframes shake{25%{transform:translateX(-12px)}75%{transform:translateX(12px)}}
+.msg{min-height:2.6em;text-align:center;font-size:clamp(18px,2.6vw,28px);font-weight:700}
+.msg.susp{color:var(--gold);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.35}}
+.msg small{display:block;font-weight:400;font-size:.8em;margin-top:4px}
+.warn{color:#ffb3b3}
+.conf{position:fixed;top:-20px;width:12px;height:18px;z-index:9;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.big-prize{font-family:Georgia,serif;font-size:clamp(44px,10vw,110px);color:var(--gold);text-shadow:0 5px 0 #8a5a00}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+ <section id="s-start" class="screen on center">
+  <h1>💧 Show do Milhão<br>da Água</h1>
+  <p class="big">Responda às perguntas, suba os degraus do prêmio e chegue a <b>R$ 1.000.000</b>!<br>Cuidado: no <b>4º erro</b> o jogo recomeça com perguntas em nova ordem.</p>
+  <button class="btn" id="go">Começar o jogo!</button>
+  <button class="pill" id="snd">🔊 Som ligado</button>
+ </section>
+
+ <section id="s-game" class="screen">
+  <div class="top">
+   <div class="pill">Pergunta <b id="n">1</b> de <b id="t">19</b></div>
+   <div class="pill">Erros: <b id="err">0/3</b> <span class="hearts" id="hh"></span></div>
+   <div class="pill">Você tem: <b id="win">R$ 0</b></div>
+  </div>
+  <div class="bar"><i id="pb"></i></div>
+  <div class="prize" id="pz"></div>
+  <div class="q" id="q"></div>
+  <div class="opts" id="o"></div>
+  <div class="msg" id="m"></div>
+  <div class="center" style="margin:0"><button class="btn" id="nx" hidden>Próxima pergunta</button></div>
+ </section>
+
+ <section id="s-win" class="screen center">
+  <div style="font-size:90px">🏆</div>
+  <h1>PARABÉNS!</h1>
+  <div class="big-prize">R$ 1.000.000</div>
+  <p class="big" id="wt"></p>
+  <button class="btn" data-again>Jogar novamente</button>
+ </section>
+
+ <section id="s-lose" class="screen center">
+  <div style="font-size:90px">😅</div>
+  <h1>Fim de jogo!</h1>
+  <p class="big">Você chegou ao <b>4º erro</b>. Mas errar faz parte de aprender! Vamos tentar de novo? As perguntas vão aparecer em <b>outra ordem</b>.</p>
+  <button class="btn" data-again>Jogar novamente</button>
+ </section>
+</div>
+
+<script>
+const Q=[
+{q:"Qual é o uso da água considerado o MAIS importante?",a:["Abastecimento humano","Geração de energia","Uso recreativo","Indústria"],e:"O abastecimento humano é o uso mais importante: beber, cozinhar, tomar banho e limpar a casa."},
+{q:"Nas usinas hidrelétricas, a força das águas represadas serve para...",a:["Gerar eletricidade","Lavar roupas","Criar peixes","Regar hortas"],e:"A força da água represada gera energia elétrica."},
+{q:"A aquicultura é a criação de...",a:["Peixes e outros seres que vivem na água","Vacas e porcos","Galinhas","Plantas de jardim"],e:"Aquicultura é a criação de peixes, crustáceos, moluscos e algas."},
+{q:"Uma fábrica de roupas usa água para tingir e acabar os tecidos. Que tipo de uso é esse?",a:["Uso industrial","Uso na pesca","Uso recreativo","Abastecimento humano"],e:"Usar água nas fábricas é uso industrial."},
+{q:"Qual setor consome MAIS água no Brasil?",a:["Agricultura e pecuária","Indústria","Consumo urbano","Consumo rural"],e:"A agropecuária consome mais água: cerca de 72% no gráfico do livro!"},
+{q:"O que é água potável?",a:["Água adequada para o consumo humano","Água do mar","Água usada para lavar ruas","Água de esgoto"],e:"Água potável é a água ideal e segura para o ser humano beber."},
+{q:"Ana viu um riacho de água bem clarinha e disse: “Posso beber sem tratar, é limpa!”. Ela está certa?",a:["Não, pois há agentes invisíveis que podem causar doenças","Sim, água clara nunca faz mal","Sim, se estiver gelada","Não, pois riacho não tem água"],e:"Muitos agentes de contaminação são invisíveis a olho nu."},
+{q:"Quem trata a água nas grandes cidades antes de ela chegar às casas?",a:["A ETA (Estação de Tratamento de Água)","A usina hidrelétrica","A cisterna","A boca de lobo"],e:"As ETAs tratam a água antes de ela ir para os reservatórios e as casas."},
+{q:"No tratamento da água, qual etapa é a adição de cloro e flúor?",a:["Desinfecção","Captação","Decantação","Floculação"],e:"Na desinfecção são adicionados cloro e flúor."},
+{q:"A água de reúso é obtida por meio do...",a:["Tratamento dos esgotos das casas","Armazenamento da chuva na cisterna","Derretimento de gelo","Água de torneira sem uso"],e:"Água de reúso vem do tratamento de esgotos e NÃO é potável."},
+{q:"Qual destas atividades PODE usar água de reúso?",a:["Lavar ruas e praças","Beber","Encher piscinas","Irrigar hortas"],e:"Reúso pode lavar ruas, refrigerar equipamentos e gerar energia. Nunca para beber!"},
+{q:"Dona Rita usou a água da máquina de lavar para lavar o quintal. Isso é...",a:["Reaproveitamento de água","Água potável natural","Tratamento de esgoto","Desmatamento"],e:"Reutilizar água sem passar pelo tratamento de reúso é reaproveitamento."},
+{q:"Pedro vai lavar o carro. Qual jeito gasta MENOS água?",a:["Com balde (cerca de 60 litros)","Com mangueira (cerca de 600 litros)","Os dois gastam igual","Com a torneira aberta o tempo todo"],e:"Com balde são uns 60 litros. Com mangueira, cerca de 600!"},
+{q:"Uma água que ficou guardada em baldes precisa de cuidado porque, sem tampa, pode virar criadouro do mosquito da...",a:["Dengue","Gripe","Catapora","Sarampo"],e:"Recipientes de água reaproveitada devem ficar tampados."},
+{q:"Cimento e asfalto cobrem quase todo o solo da cidade. Qual é o problema?",a:["A chuva não é absorvida e pode causar enchentes","A chuva entra no solo mais fácil","O solo fica mais saudável","As plantas crescem melhor"],e:"Isso é a impermeabilização do solo: a água não entra na terra."},
+{q:"Lixo jogado na rua entope as bocas de lobo. O que pode acontecer quando chove?",a:["A água não escoa e pode alagar","A água some sozinha","A chuva para","As ruas ficam mais limpas"],e:"Lixo e sedimentos dificultam a drenagem da água."},
+{q:"O que o desmatamento nas nascentes provoca?",a:["O desaparecimento dos mananciais","Mais peixes","Água mais limpa","Menos chuva de verão"],e:"Sem vegetação, os mananciais podem desaparecer. E sem plantas nas margens dos rios ocorre o assoreamento."},
+{q:"Qual técnica leva água em gotinhas direto para a raiz da planta e economiza mais de 50%?",a:["Gotejamento","Irrigação por aspersão","Mangueira aberta","Enchente"],e:"O gotejamento molha só onde a planta precisa."},
+{q:"Uma cisterna guarda água da chuva. Essa água pode ser usada para...",a:["Plantações e consumo animal, mas não para beber","Beber direto","Somente gerar energia","Nada, é inútil"],e:"Água da chuva armazenada não é potável, mas serve para plantações e animais."},
+{mil:1,q:"PERGUNTA DO MILHÃO! Uma escola vai lavar a calçada e também dar água para as crianças beberem. Qual é a escolha CORRETA?",a:["Água de reúso para lavar a calçada e água potável para beber","Água de reúso para beber e potável para a calçada","Água de reúso para os dois","Água da chuva sem tratar para beber"],e:"Reúso serve para limpeza de ruas, mas beber exige água potável e tratada!"}
+];
+const P=[1000,2000,3000,4000,5000,7500,10000,15000,20000,25000,30000,40000,50000,75000,100000,200000,300000,500000,1000000];
+const $=id=>document.getElementById(id),L="ABCD";
+const R=n=>"R$ "+n.toLocaleString("pt-BR");
+let order,i,errors,won,locked,sound=true,AC;
+function sh(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.random()*(k+1)|0;[a[k],a[j]]=[a[j],a[k]]}return a}
+function tone(f,d,t="sine",v=.15,when=0){if(!sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.value=f;o.connect(g);g.connect(AC.destination);const s=AC.currentTime+when;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d)}catch(e){}}
+const sOK=()=>[523,659,784,1047].forEach((f,k)=>tone(f,.25,"triangle",.18,k*.12));
+const sBAD=()=>[300,220,160].forEach((f,k)=>tone(f,.3,"sawtooth",.13,k*.18));
+const sTen=()=>{for(let k=0;k<8;k++)tone(k%2?220:196,.2,"sine",.1,k*.28)};
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));$(id).classList.add("on")}
+function conf(){const c=["#ffc933","#22c55e","#ef4444","#38bdf8","#f472b6"];for(let k=0;k<90;k++){const d=document.createElement("div");d.className="conf";d.style.left=Math.random()*100+"vw";d.style.background=c[k%5];d.style.animationDuration=2+Math.random()*2.5+"s";d.style.animationDelay=Math.random()*.8+"s";document.body.appendChild(d);setTimeout(()=>d.remove(),5500)}}
+function start(){const norm=sh(Q.filter(x=>!x.mil).map((x,k)=>k));order=norm.concat(Q.length-1);i=0;errors=0;won=0;$("t").textContent=Q.length;show("s-game");render()}
+function hud(){$("n").textContent=i+1;$("err").textContent=errors+"/3";$("hh").textContent="❤️".repeat(3-Math.min(errors,3))+"🖤".repeat(Math.min(errors,3));$("win").textContent=R(won);$("pb").style.width=(i/Q.length*100)+"%";$("pz").textContent=(Q[order[i]].mil?"🌟 ":"")+"Valendo "+R(P[i])}
+function render(){locked=false;const x=Q[order[i]];hud();$("q").textContent=x.q;$("nx").hidden=true;
+ const m=$("m");m.className="msg";m.innerHTML=errors===3?'<span class="warn">⚠️ Cuidado! Mais um erro e o jogo recomeça.</span>':"Clique na resposta que você acha certa.";
+ const o=$("o");o.innerHTML="";
+ sh(x.a.map((t,k)=>({t,ok:k===0}))).forEach((it,k)=>{const b=document.createElement("button");b.className="opt";b.innerHTML="<span>"+L[k]+"</span>"+it.t;b.dataset.ok=it.ok?1:0;b.onclick=()=>pick(b);o.appendChild(b)})}
+function pick(b){if(locked)return;locked=true;const all=[...document.querySelectorAll(".opt")];all.forEach(x=>x.disabled=true);b.classList.add("sel");
+ const m=$("m");m.className="msg susp";m.textContent="Será que é essa mesmo?... 🤔";sTen();
+ setTimeout(()=>reveal(b,all),2400)}
+function reveal(b,all){const x=Q[order[i]],ok=b.dataset.ok==="1",m=$("m");b.classList.remove("sel");m.className="msg";
+ all.forEach(a=>{if(a.dataset.ok==="1")a.classList.add("ok")});
+ if(ok){sOK();won=P[i];$("win").textContent=R(won);m.innerHTML="🎉 Acertou! <small>"+x.e+"</small>"}
+ else{sBAD();b.classList.add("bad");errors++;$("err").textContent=Math.min(errors,3)+"/3";
+  m.innerHTML="❌ Não foi dessa vez. A resposta certa está em verde. <small>"+x.e+"</small>"}
+ const nx=$("nx");nx.hidden=false;
+ if(!ok&&errors>3)nx.textContent="Continuar";else nx.textContent=(ok&&i===Q.length-1)?"Ver resultado":"Próxima pergunta";
+ nx.onclick=()=>{
+  if(!ok&&errors>3){show("s-lose");return}
+  if(!ok&&x.mil){render();return}
+  if(i===Q.length-1){$("wt").textContent="Você terminou com "+errors+" erro"+(errors===1?"":"s")+". Você é um(a) craque da água! 💧";show("s-win");conf();sOK();return}
+  i++;render()}}
+$("go").onclick=start;
+document.querySelectorAll("[data-again]").forEach(b=>b.onclick=start);
+$("snd").onclick=()=>{sound=!sound;$("snd").textContent=sound?"🔊 Som ligado":"🔇 Som desligado"};
+</script>
+</body>
+</html>
